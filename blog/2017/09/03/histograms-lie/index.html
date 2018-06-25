@@ -452,7 +452,7 @@ for more details on the software.</p>
 of them is connected to $Z$ neighbors. The next figure shows such kind of
 network for $L=40$ and $Z=4$. That is, each node (little dot) connected 
 with 4 of its nearest other dots by an edge (straight line).</p>
-<p><img alt="" src="https://github.com/ijpulidos/ijpulidos.github.io/raw/master/media/network.png"></p>
+<p><img alt="" src="https://github.com/ijpulidos/ijpulidos.github.io/raw/master/figures/network.png"></p>
 <p>One of the ways to characterize a network like this is to compute the
 minimum distance between a pair of nodes, that is, how may edges one has
 to pass through to get from one node to the other, that is called the 
@@ -465,7 +465,7 @@ with lengths $1$ as there are with $2$ or $3$ or $4$ or... $L/Z -1 = 9$.
 To visualize that and check the network is well-built, we can do a 
 histogram and see that in effect the histogram is constant for the
 range of $1$ to $9$. The next picture shows one of those histograms.</p>
-<p><img alt="" src="https://raw.githubusercontent.com/ijpulidos/ijpulidos.github.io/master/media/histfail.png"></p>
+<p><img alt="" src="https://raw.githubusercontent.com/ijpulidos/ijpulidos.github.io/master/figures/histfail.png"></p>
 <p>What the... ? This must be wrong!</p>
 <p>When one encounters this and one is not that experienced with
 dealing with histograms it is easy to think that there must be something 
@@ -475,7 +475,7 @@ histogram is just not well built, it's partitioning the data in a wrong
 way. That specific histogram was using 7 bins (arbitrarily) and using a 
 dot diagram one can see how it is failing, a parallel between a dot
 diagram and the histogram can be seen in the figure below</p>
-<p><img alt="" src="https://raw.githubusercontent.com/ijpulidos/ijpulidos.github.io/master/media/histdotfail.png"></p>
+<p><img alt="" src="https://raw.githubusercontent.com/ijpulidos/ijpulidos.github.io/master/figures/histdotfail.png"></p>
 <p>There you can see how dots are just unbalanced for example for the 2nd
 and 3rd bins, try to count "whole lines" (lines of dots that go from the
 blue to the "pink" ones in the same bin) and then check the remainder, you can 
@@ -484,7 +484,7 @@ to be careful when choosing bins limits, a good choice for this specific
 case is having 10 bins as shown in the figure below. And that's basically
 what the problem is, you have to carefully choose the parameters for your
 histogram almost exclusively for your case.</p>
-<p><img alt="" src="https://raw.githubusercontent.com/ijpulidos/ijpulidos.github.io/master/media/histgood.png"></p>
+<p><img alt="" src="https://raw.githubusercontent.com/ijpulidos/ijpulidos.github.io/master/figures/histgood.png"></p>
 <p>So now we are getting the expected result and we can really draw a 
 correct conclusion from this histogram. As expected, it is constant
 in the "middle" part, that tells use our network software seems to be

@@ -6,7 +6,7 @@
         <meta name="author" content="Iván Pulido">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
-        <title>Ivan's Tangent bundle - Articles by Iván Pulido | Ivan's Tangent bundle</title>
+        <title>Setting up linux in Rock64 SBC for the first time | Ivan's Tangent bundle</title>
 
 	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 	<link rel="icon" href="/favicon.ico" type="image/x-icon">
@@ -425,148 +425,206 @@ article .meta a.comments_btn:hover {
         </header>
 
         <div id="wrap">
-<div class="container index">
+<div class="container post">
+    <article>
+        <header>
+            <h1>Setting up linux in Rock64 SBC for the first time</h1>
+            <time datetime="article.date.isoformat()" pubdate>Sun 24 June 2018</time>
+        </header>
 
-  <article>
-    <header>
-      <h2><a href="http://ijpulidos.github.io/blog/2018/06/24/configuring-rock64/">Setting up linux in Rock64 SBC for the first time</a></h2>
-      <time datetime="" title="2018-06-24T17:16:00-05:00" pubdate>Sun 24 June 2018</time>
-    </header>
-
-    <div class="article_content">
-      <p>I recently purchased a <a href="https://www.pine64.org/?page_id=7147">Rock64</a> SBC (from
+        <div class="article_content">
+            <p>I recently purchased a <a href="https://www.pine64.org/?page_id=7147">Rock64</a> SBC (from
 pine64),
 which is a fairly powerful and inexpensive micro computer. You can think 
 of it as a more powerful alternative to the famous raspberry pi (to date).
-The idea is setting this up as a media center for my home and as a …</p>
-    </div>
+The idea is setting this up as a media center for my home and as a micro
+server, for storing my personal projects in repositories and similar. I 
+also acquired a eMMC module which I haven't tested yet because I have to
+wait for the serial-USB converter thing to arrive, once I get my hands into
+this I will let you know in a future blog post.</p>
+<h1>Installing Linux into SD and first steps</h1>
+<p>As you could guess, flashing linux into the SD is pretty straightforward,
+to avoid complications I just used <a href="https://github.com/ayufan-rock64/linux-build/releases">ayufan's images</a>
+which are already configured to work on the Rock64 SBC. I do have to tell
+that I had better results using the ubuntu bionic-lxde image for 
+rock64/arm64. I tried with the minimal bionic image but had performance 
+issues that I did not experienced with the lxde one. One of the main reasons
+for choosing this image is that the experimental hardware acceleration when
+playing videos allegedly works better with this image.</p>
+<p>To flash the SD you just download the desired image in <code>*.img.xz</code> format
+from the ayufan's repository (link above), insert the SD into your laptop, or
+whatever device you will be using to flash it, and then use a software to
+flash it. In my case I found the software <a href="https://etcher.io/">Etcher</a> really
+easy and complete enough to use. You <strong>may</strong> have Etcher available in your
+linux package system (I know it's in Solus, which is the Linux distribution
+I'm using). The process of using Etcher is pretty straightfoward, you just 
+look for the image file, select the SD/SD-reader and click "Flash", it takes
+some minutes depending on your SD and system. Take into account that Etcher
+is also available for Windows and Mac.</p>
+<p>After it completes, you just plug the microSD into the Rock64 board and 
+turn it on either by plugging it to power or pushing the power button on
+it. It will load the Linux image from SD automatically. You will then get
+a login display which you can use <code>rock64</code> for both user and password and
+this will end up loading the <a href="https://lxde.org/">LXDE</a> desktop environment.</p>
+<h1>Getting sound to work</h1>
+<p>After installing and booting Ubuntu image, everything worked as expected 
+except for the sound. As sonn as I logged into the desktop graphical environment
+I could hear some noises coming from the speakers of the TV that was connected
+to the Rock64 but no sound, at all, after that. What I thought was that
+<a href="https://www.freedesktop.org/wiki/Software/PulseAudio/">pulseaudio</a> somehow
+was not working fine in this architecture, therefore I thought of disabling 
+it completely and letting the system use only <a href="https://en.wikipedia.org/wiki/Advanced_Linux_Sound_Architecture">ALSA</a>,
+which is built into the kernel. This was the solution indeed and what I did
+to disable and set up alsa was as follows:</p>
+<ul>
+<li>Disable pulseaudio for the user (it's not recommeded to uninstall it, 
+disabling it should be enough), by following instruction on <a href="https://kodi.wiki/view/PulseAudio/HOW-TO:_Disable_PulseAudio_and_use_ALSA_%28without_removing_PulseAudio%29_for_Ubuntu">this site</a>,
+which was done by running the following instructions:</li>
+<li><code>cp /etc/pulse/client.conf /home/yourusername/.config/pulse</code></li>
+<li>
+<p>Edit the file such that the line with <code>; autospawn = yes</code> changes to
+   <code>autospawn=no</code> (note there isn't a semicolon at the beggining of the line).</p>
+</li>
+<li>
+<p>After disabling <code>pulseaudio</code> the only thing that's missing is configuring ALSA
+to use HDMI as the audio output. This is done by creating the file
+<code>/etc/asound.conf</code> with the following content inside it:</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span>pcm.!default {
+    type             plug
+    slave.pcm       &quot;rock_audio_pot&quot;
+}
 
-    <div class="meta">
-      <div>
-        <a href="http://ijpulidos.github.io/blog/2018/06/24/configuring-rock64/" class="read_more">Read more &#8594;</a>
-      </div>
+pcm.rock_audio_pot {
+    type            softvol
+    slave {
+        pcm         &quot;hw:1&quot;
+    }
+    control {
+        name        &quot;Master&quot;
+        card        0
+    }
+}
+</pre></div>
 
-      <div>
-            <a href="http://ijpulidos.github.io/tag/linux.html" class="tag">linux</a>
-            <a href="http://ijpulidos.github.io/tag/arm.html" class="tag">arm</a>
-            <a href="http://ijpulidos.github.io/tag/pine64.html" class="tag">pine64</a>
-            <a href="http://ijpulidos.github.io/tag/rock64.html" class="tag">rock64</a>
-            <a href="http://ijpulidos.github.io/tag/sbc.html" class="tag">sbc</a>
-            <a href="http://ijpulidos.github.io/tag/alsa.html" class="tag">alsa</a>
-            <a href="http://ijpulidos.github.io/tag/audio.html" class="tag">audio</a>
-            <a href="http://ijpulidos.github.io/tag/mediacenter.html" class="tag">mediacenter</a>
-            <a href="http://ijpulidos.github.io/tag/microserver.html" class="tag">microserver</a>
-            <a href="http://ijpulidos.github.io/tag/server.html" class="tag">server</a>
-            <a href="http://ijpulidos.github.io/tag/arm64.html" class="tag">arm64</a>
-            <a href="http://ijpulidos.github.io/tag/ubuntu.html" class="tag">ubuntu</a>
-            <a href="http://ijpulidos.github.io/tag/bionic.html" class="tag">bionic</a>
-      </div>
 
-    </div>
+<p>After this you should just reboot/restart the system.</p>
+<h1>3D accelerated video playback</h1>
+<p>As told in <a href="https://github.com/ayufan-rock64/linux-build/blob/master/recipes/video-playback.md">ayufan's site</a>,
+the ubuntu bionic image comes with rkmpv which is a wrapper for mpv to make it
+use the hardware/GPU acceleration, such that you should only run the following
+command to play a video in your screen, using the GPU acceleration</p>
+<div class="highlight"><pre><span></span>rkmpv file.mkv
+</pre></div>
 
-  </article>
-  <div class="separator"></div>
-  <article>
-    <header>
-      <h2><a href="http://ijpulidos.github.io/blog/2017/09/03/histograms-lie/">Histograms can lie</a></h2>
-      <time datetime="" title="2017-09-03T01:34:00-05:00" pubdate>Sun 03 September 2017</time>
-    </header>
 
-    <div class="article_content">
-      <h1>Histograms can lie</h1>
-<p>I bet that nowadays is not a secret for anyone to know
-that data plots and visualizations
-can be manipulated (accidentally or not) in such a way that they can lead
-to incorrect conclusions and misconceptions. This is a very much relevant
-problem in this data-driven world …</p>
-    </div>
+<p>What I found out is that rkmpv only sets up a specific environment variable and
+passes some specific parameters to mpv to play the file, I thought on making
+them the default for my setup, this is achieved by doing the following.</p>
+<p>First you have to edit your <code>~/.bashrc</code> file in your (for example by running
+<code>nano ~/.bashrc</code>), and append to the end of the file the following line</p>
+<div class="highlight"><pre><span></span>export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/gbm:/usr/lib/arm-linux-gnueabihf/gbm
+</pre></div>
 
-    <div class="meta">
-      <div>
-        <a href="http://ijpulidos.github.io/blog/2017/09/03/histograms-lie/" class="read_more">Read more &#8594;</a>
-      </div>
 
-      <div>
-            <a href="http://ijpulidos.github.io/tag/histograms.html" class="tag">histograms</a>
-            <a href="http://ijpulidos.github.io/tag/statistics.html" class="tag">statistics</a>
-            <a href="http://ijpulidos.github.io/tag/data.html" class="tag">data</a>
-            <a href="http://ijpulidos.github.io/tag/analysis.html" class="tag">analysis</a>
-            <a href="http://ijpulidos.github.io/tag/networks.html" class="tag">networks</a>
-            <a href="http://ijpulidos.github.io/tag/complexity.html" class="tag">complexity</a>
-      </div>
+<p>save and close it.</p>
+<p>Then you just need to tell mpv to use the expected parameters as default
+parameters, this is done by creating a file in <code>~/.config/mpv/mpv.conf</code> with the
+following content</p>
+<div class="highlight"><pre><span></span>vo=gpu
+gpu-context=drm
+hwdec=rkmpp
+</pre></div>
 
-    </div>
 
-  </article>
-  <div class="separator"></div>
-  <article>
-    <header>
-      <h2><a href="http://ijpulidos.github.io/blog/2017/04/16/shut-up-use-definitions/">Shut up and use definitions</a></h2>
-      <time datetime="" title="2017-04-16T10:20:00-05:00" pubdate>Sun 16 April 2017</time>
-    </header>
+<p>This will just make mpv use these parameters by default when it's run without
+manually specified parameters/options.</p>
+<h1>Conclusion</h1>
+<p>This basically resulted in what I need so far for the Rock64, which is a basic
+media center and linux TV, there are some other things I wanted to install to
+play with it, such as installing tools like <a href="https://github.com/mafintosh/peerflix">peerflix</a>, 
+<a href="https://github.com/ItzBlitz98/torrentflix">torrentflix</a> or <a href="https://kodi.tv/">kodi</a>.</p>
+<h1>Troubleshooting</h1>
+<p>I did encounter some other problems, specifically the bionic-minimal image from
+ayufan didn't work as expected. I tried installing <code>LXQT</code> environment without any
+luck, all I got was a black screen. Then, I also tried using <code>budgie-wm</code> which
+did load but the performance was very poor. Still I tried to set up mpv, for
+video playback, and all the other tools without much luck. This was what finally
+made me choose to use the Ubuntu bionic-lxde image, which ended up working
+pretty well.</p>
+        </div>
 
-    <div class="article_content">
-      <h1>Shut up! And use the definitions</h1>
-<p>So today I had a discussion with some folks at this physics chat room about the 
-concept of angular momentum and the ability to use it to describe a
-particle's motion (particle understood as a point mass in the classical sense).</p>
-<p>My discomfort started …</p>
-    </div>
+        <div class="meta">
+            <div>
+                    <a href="http://ijpulidos.github.io/tag/linux.html" class="tag">linux</a>
+                    <a href="http://ijpulidos.github.io/tag/arm.html" class="tag">arm</a>
+                    <a href="http://ijpulidos.github.io/tag/pine64.html" class="tag">pine64</a>
+                    <a href="http://ijpulidos.github.io/tag/rock64.html" class="tag">rock64</a>
+                    <a href="http://ijpulidos.github.io/tag/sbc.html" class="tag">sbc</a>
+                    <a href="http://ijpulidos.github.io/tag/alsa.html" class="tag">alsa</a>
+                    <a href="http://ijpulidos.github.io/tag/audio.html" class="tag">audio</a>
+                    <a href="http://ijpulidos.github.io/tag/mediacenter.html" class="tag">mediacenter</a>
+                    <a href="http://ijpulidos.github.io/tag/microserver.html" class="tag">microserver</a>
+                    <a href="http://ijpulidos.github.io/tag/server.html" class="tag">server</a>
+                    <a href="http://ijpulidos.github.io/tag/arm64.html" class="tag">arm64</a>
+                    <a href="http://ijpulidos.github.io/tag/ubuntu.html" class="tag">ubuntu</a>
+                    <a href="http://ijpulidos.github.io/tag/bionic.html" class="tag">bionic</a>
+            </div>
+        </div>
+    </article>
 
-    <div class="meta">
-      <div>
-        <a href="http://ijpulidos.github.io/blog/2017/04/16/shut-up-use-definitions/" class="read_more">Read more &#8594;</a>
-      </div>
-
-      <div>
-            <a href="http://ijpulidos.github.io/tag/physics.html" class="tag">physics</a>
-            <a href="http://ijpulidos.github.io/tag/irc.html" class="tag">irc</a>
-            <a href="http://ijpulidos.github.io/tag/concepts.html" class="tag">concepts</a>
-            <a href="http://ijpulidos.github.io/tag/definitions.html" class="tag">definitions</a>
-            <a href="http://ijpulidos.github.io/tag/angular.html" class="tag">angular</a>
-            <a href="http://ijpulidos.github.io/tag/momentum.html" class="tag">momentum</a>
-      </div>
-
-    </div>
-
-  </article>
-  <div class="separator"></div>
-  <article>
-    <header>
-      <h2><a href="http://ijpulidos.github.io/blog/2017/04/15/hello-world/">Hello World!</a></h2>
-      <time datetime="" title="2017-04-15T18:50:00-05:00" pubdate>Sat 15 April 2017</time>
-    </header>
-
-    <div class="article_content">
-      <h1>Hello World!</h1>
-<p>Ok, so welcome to my personal site, I'll be rambling about physics, computing, free software, music, among other things... I hope you find this content enjoyable, though to be honest I mostly do it for myself, to keep a log/diary of things I'd like to easily recall …</p>
-    </div>
-
-    <div class="meta">
-      <div>
-        <a href="http://ijpulidos.github.io/blog/2017/04/15/hello-world/" class="read_more">Read more &#8594;</a>
-      </div>
-
-      <div>
-            <a href="http://ijpulidos.github.io/tag/blog.html" class="tag">blog</a>
-            <a href="http://ijpulidos.github.io/tag/about.html" class="tag">about</a>
-      </div>
-
-    </div>
-
-  </article>
-  <div class="separator"></div>
-
-  <nav class="pagination row">
-    <div class="col-xs-6 left">
-    </div>
-    <div class="col-xs-6 right">
-    </div>
-  </nav>
-
-  </div>
 
 </div>
+
+<style type="text/css">
+{
+    max-width: 700px;
+}
+
+.text_cell .prompt {
+    display: none;
+}
+
+div.cell {
+    padding: 0;
+}
+
+div.text_cell_render {
+    padding: 0;
+}
+
+div.prompt {
+    font-size: 13px;
+}
+
+div.input_prompt {
+    padding: .7em 0.2em;
+}
+
+div.output_prompt {
+    padding: .4em .2em;
+}
+
+div.input_area {
+    margin: .2em 0.4em;
+    max-width: 580px;
+}
+
+table.dataframe {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+}
+
+table.dataframe th, td {
+    padding: 4px;
+    text-align: left;
+}
+
+pre code {
+    background-color: inherit;
+}</style>
 
         </div>
 <!--
